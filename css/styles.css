@@ -1,0 +1,178 @@
+﻿/* Variables
+    Main background color: var(--main-bg-color);
+    Main foreground color: var(--main-fg-color);
+    Main font famil: var(--main-font-family);
+    Main outline color: var(--main-outline-color);
+*/
+html {height: 100%;}
+ 
+body {
+    height: 100%;
+ }
+
+.content {
+    display:block;
+}
+
+.verse-container {
+    flex: 1;
+	display: flex;
+	align-items: var(--verse-alignment);
+	justify-content: center;
+ }
+
+#verse-area, .verse-menu-button {
+	font-family: var(--main-font-family);
+	background: var(--main-bg-color);
+	border: none;
+	outline: none;
+	padding: 0;
+	color: var(--main-fg-color);
+	text-align: center;
+	font-size: var(--verse-font-size);
+	line-height: var(--verse-line-spacing);
+	width: 100%;
+ }
+
+#verse-area {
+    border:dashed;
+    border-width: 1px;
+}
+ 
+#context-menu {
+	font-family: var(--main-font-family);
+	font-size: 16px;
+    width: 150px;
+	background: var(--main-bg-color);
+	color: var(--main-fg-color);
+	position: absolute;
+	display: none;
+	list-style: none;
+	border: 1px solid var(--main-outline-color);
+    z-index: 1000;
+ }
+ 
+	#context-menu li {padding: 5px;}
+ 
+		#context-menu li:hover {
+            cursor: pointer;
+            background: var(--main-outline-color);
+		}
+ 
+.chord {
+	font-family: var(--main-font-family);
+	font-size: var(--chord-font-size);
+    line-height: var(--chord-font-size);
+	position: absolute;
+	color: magenta;
+ }
+ 
+.has-chord {background: var(--main-outline-color);}
+ 
+.contains-chord {margin-top: var(--chord-font-size);}
+ 
+
+.side-menu {
+	width: 200px;
+	height: 100%;
+	background-color: gray;
+ }
+ 
+p {margin: 0;}
+ 
+.button-container {
+	height: 100px;
+	background: var(--main-bg-color);
+	margin: 5px;
+	cursor: pointer;
+ }
+ 
+.selected {
+	border: 3px solid var(--accent-color);
+ }
+ 
+.verse-menu-button {
+	width: calc(100% - 10px);
+	font-size: calc(var(--verse-font-size) * .15);
+	line-height: calc(var(--verse-line-spacing) * .15);
+	user-select: none;
+    pointer-events:none;
+ }
+ 
+	.verse-menu-button .has-chord {background: none;}
+ 
+	.verse-menu-button .contains-chord {margin-top: 0;}
+
+.title-menu-item, .title-menu-item a {
+    height: 64px;
+    line-height: 64px;
+    font-size: 2.1rem;
+}
+.side-nav li.title-menu-item>a>i.material-icons {
+    height: 64px;
+    line-height: 64px;
+}
+
+.row {
+    margin-bottom: 0;
+}
+
+.header-sort {
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.collection {
+    user-select: none;
+}
+
+.book-card {
+    margin: 15px;
+    padding: 0;
+}
+
+.book-card .card-content {
+    padding: 0 10px 0 10px;
+}
+
+.book-card .card-content .card-title {
+    font-size: 20px;
+}
+
+.row .col {
+    padding: 0;
+}
+
+#book-cover-image {
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    height: 350px;
+}
+
+.book-info {
+    margin: 20px;
+}
+
+#search-results {
+    z-index: 100;
+    background: white;
+    padding: 0.5rem 0 0.5rem 0;
+    margin: 0;
+    display: none;
+}
+#search-results .collection-item {
+    border-bottom: none;
+}
+
+#search-results .collection-item i {
+    line-height: 1.5rem;
+    height: 1.5rem;
+    display: inline;
+}
+
+.collection a.collection-item:not(.active):hover, .collection .collection-item.active {
+    background-color: #ddd;
+    color: #26a69a;
+}

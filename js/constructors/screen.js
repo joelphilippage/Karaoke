@@ -1,0 +1,5 @@
+﻿var Screen = {
+    change: function () {
+
+    }
+}
