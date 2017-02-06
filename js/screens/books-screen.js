@@ -47,6 +47,6 @@ function booksScreenInit(GoToVerseEditScreen, GoToSongScreen) {
 function createCard(title, img, id) {
     if (!img.trim())
         img = 'img/placeholder-book.jpg';
-    return $('<div class="col s6 m4 l2 card book-card" id="book-card-' + id + '"><div class="card-image waves-effect waves-block waves-light"><img class="activator" src="' + img + '"></div><div class="card-content"><span class="card-title activator grey-text text-darken-4">' + title + '</span></div></div>');
+    return $('<div class="col s12 m4 l3 card book-card" id="book-card-' + id + '"><div class="card-image waves-effect waves-block waves-light"><img class="activator" src="' + img + '"></div><div class="card-content"><span class="card-title activator grey-text text-darken-4 truncate">' + title + '</span></div></div>');
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////

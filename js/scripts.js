@@ -10,12 +10,17 @@
 
 // Declare Variables
 //////////////////////////////////////////////////////////////////////////////////////////////////////
+// Arrays
 var Songs = new Array(),
     songList = new Array(),
     bookTitles = new Array();
 
+// Booleans
 var songsLoaded = false,
     searchDeselected = false;
+
+// Integers
+var totalSongs = 0;
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Events
@@ -43,6 +48,44 @@ $(window).resize(function () {
         else if ($(document.activeElement).attr('contenteditable') != 'true' && ($(document.activeElement).is('input') == false || $('#search-label').hasClass('active')) && e.keyCode != 38 && e.keyCode != 40)
             RunSearch(e);
     }
+});
+
+$('#search').keydown(function (e) {
+    var $collection = $('#search-results .collection-item');
+
+    if (e.keyCode == 13) { // enter
+        $('#search-results .active').trigger('click'); // Run click event on selected search result
+        $('#search').trigger('focus').trigger('blur'); // Deselect search form
+        searchDeselected = true;
+        NavBar.hide();
+    }
+    if (e.keyCode == 38) // up arrow
+    {
+        var lastIndex = $('.collection-item.active').index();
+
+        $('.collection-item.active').attr('class', 'collection-item');
+        if (lastIndex > 0)
+            $($collection[lastIndex - 1]).addClass('active');
+        else
+            $($collection[$collection.length - 1]).addClass('active');
+        return false;
+    }
+    if (e.keyCode == 40) // down arrow
+    {
+        var lastIndex = $('.collection-item.active').index();
+
+        $('.collection-item.active').attr('class', 'collection-item');
+        if (lastIndex < $collection.length - 1)
+            $($collection[lastIndex + 1]).addClass('active');
+        else
+            $($collection[0]).addClass('active');
+        return false;
+    }
+});
+
+// When all songs have loaded
+$(document).ajaxStop(function () {
+    GoToSongScreen();
 });
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -94,20 +137,19 @@ function LoadSongs(URL) {
                     jsonURLs.push(URL + '/' + href);
             });
             if (jsonURLs.length) {
+                totalSongs += jsonURLs.length;
                 for (i = 0; i < jsonURLs.length; i++) {
                     LoadSong(jsonURLs[i], function (loadedSong) {
                         if (loadedSong) {
                             if (loadedSong.book && loadedSong.book.title && !ArrayContainsID(Library.books, loadedSong.book.title)) // If the book has been named and it is not already in library
                                 Library.addBook(loadedSong.book); // Add new book to library
                             Library.addSong(loadedSong); // Add song to library
+
+                            $('.determinate').css('width', (Library.songs.length / totalSongs) * 100 + '%');
                         }
-                        if (i >= jsonURLs.length) 
-                            GoToSongScreen();
                     });
                 }
             }
-            else
-                GoToSongScreen();
         }
     });
 }
@@ -126,6 +168,7 @@ function ResetMainArea() {
     $('body').removeAttr('style');
     $('#header-menu').html('');
     $('header').removeAttr('style');
+    GoToEditMode();
 }
 
 function UpdateSearchBar() {
@@ -159,21 +202,23 @@ function RunSearch(e)
         });
     $('#search-results').html('');
     var resultsLength = searchResults.length;
-    if (resultsLength > 5)
-        resultsLength = 5;
+    if (searchText.trim().length <= 0)
+        resultsLength = 0;
 
-    if (resultsLength > 0)
-        $('#search-results').css('display', 'block');
-    else 
-        $('#search-results').css('display', 'none');
+    if ($('#search').val().length <= 0)
+        SearchResults.hide();
+    else
+        SearchResults.show();
 
-    if ($('#search').val().length <= 0) {
-        $('#search').trigger('focus').trigger('blur'); // Deselect search form
-        $('#search-results').css('display', 'none');
-        HideNav();
+    if (resultsLength > 0) {
+        SearchResults.show();
+        if (resultsLength > 5)
+            resultsLength = 5;
     }
     else
-        RevealNav();
+        SearchResults.hide(true);
+
+    
 
     for (l = 0; l < resultsLength; l++) {
         var icon = 'book';
@@ -193,58 +238,25 @@ function RunSearch(e)
         }
 
         $('#search').val(''); // Clear Search bar.
-        $('#search-results').css('display', 'none');
+        SearchResults.hide();
     });
 
     var $collection = $('#search-results .collection-item');
     $($collection[0]).addClass('active');
-
-    $('#search').keydown(function (e) {
-        if (e.keyCode == 13) { // enter
-            $('#search-results .active').trigger('click'); // Run click event on selected search result
-            $('#search').trigger('focus').trigger('blur'); // Deselect search form
-            searchDeselected = true;
-            HideNav();
-        }
-        if (e.keyCode == 38) // up arrow
-        {
-            var lastIndex = $('.collection-item.active').index();
-            if (lastIndex == -1)
-                lastIndex = 0;
-            $('.collection-item.active').attr('class', 'collection-item');
-            if (lastIndex > 0)
-                $($collection[lastIndex - 1]).addClass('active');
-            else
-                $($collection[$collection.length - 1]).addClass('active');
-            return false;
-        }
-        if (e.keyCode == 40) // down arrow
-        {
-            var lastIndex = $('.collection-item.active').index();
-            if (lastIndex == -1)
-                lastIndex = $collection.length - 1;
-
-            $('.collection-item.active').attr('class', 'collection-item');
-            if (lastIndex < $collection.length - 1)
-                $($collection[lastIndex + 1]).addClass('active');
-            else
-                $($collection[0]).addClass('active');
-            return false;
-        }
-    });
-
-    //$('#search').blur(function () {
-    //    $('#search').val(''); // Clear Search bar.
-    //    $('#search-results').css('display', 'none');
-    //});
 }
 
-function RevealNav() {
-    $('header').animate({ 'top': '0px' }, 250);
-}
-
-function HideNav() {
-    $('header').animate({ 'top': '-' + $('header').height() + 'px' }, 250);
+var SearchResults = {
+    show: function () {
+        NavBar.show();
+        $('#search-results').css('display', 'block');
+    },
+    hide: function (text) {
+        $('#search-results').css('display', 'none');
+        if (!text) {
+            $('#search').trigger('focus').trigger('blur');
+            NavBar.hide();
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

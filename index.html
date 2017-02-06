@@ -33,36 +33,49 @@
 
 <body spellcheck=false>
     <header>
-        <nav>
-            <div class="nav-wrapper light-green darken-1">
-                <a href="#" data-activates="side-menu" class="button-collapse show-on-large"><i class="material-icons">menu</i></a>
-                <ul class="right" id="header-menu"></ul>
-                <ul class="side-nav" id="side-menu">
-                    <li id="title-menu-item"><a href="#">Karaoke<i class="material-icons">&#xE5D2;</i></a></li>
-                    <li id="books-button"><a href="#">Books<i class="material-icons">&#xE865;</i></a></li>
-                    <li id="songs-button"><a href="#">Songs<i class="material-icons">&#xE405;</i></a></li>
-                    <li><a href="#">Playlists<i class="material-icons">&#xE05F;</i></a></li>
-                    <li><a href="#">Tags<i class="material-icons">&#xE54E;</i></a></li>
-                    <li class="divider"></li>
-                    <li class="create-song-button"><a href="#">Create Song<i class="material-icons">&#xE147;</i></a></li>
-                    <li><a href="#">Settings<i class="material-icons">&#xE8B8;</i></a></li>
-                </ul>
-                <a href="#!" class="brand-logo">Karaoke</a>
-                <form class="search-form">
-                    <div class="input-field">
-                        <input id="search" type="search" required>
-                        <label for="search" id="search-label"><i class="material-icons">search</i></label>
-                        <i class="material-icons">close</i>
-                    </div>
-                    <div id="search-results" class="collection">
-                    </div>
-                </form>
-            </div>
-    </nav>
-    </header>
-        <div class="container content">
-            <!--All displayed content appears here.-->
+        <div class="navbar-fixed">
+            <nav>
+                <div class="nav-wrapper light-green darken-1">
+                    <a href="#" data-activates="side-menu" class="button-collapse show-on-large"><i class="material-icons">menu</i></a>
+                    <ul class="right" id="header-menu"></ul>
+
+                    <a href="#!" class="brand-logo">Karaoke</a>
+                    <form class="search-form">
+                        <div class="input-field">
+                            <input id="search" type="search" required>
+                            <label for="search" id="search-label"><i class="material-icons">search</i></label>
+                            <i class="material-icons">close</i>
+                        </div>
+                        <div id="search-results" class="collection">
+                        </div>
+                    </form>
+                </div>
+            </nav>
         </div>
+    </header>
+    <div class="container content">
+        <!--All displayed content appears here.-->
+
+        <!--Preloader-->
+        <div class="valign-wrapper">
+            <div class="valign">
+                <h5>Loading Songs</h5>
+                <div class="progress light-green">
+                    <div class="determinate" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <ul class="side-nav" id="side-menu">
+        <li id="title-menu-item"><a href="#">Karaoke<i class="material-icons">&#xE5D2;</i></a></li>
+        <li id="books-button"><a href="#">Books<i class="material-icons">&#xE865;</i></a></li>
+        <li id="songs-button"><a href="#">Songs<i class="material-icons">&#xE405;</i></a></li>
+        <li><a href="#">Playlists<i class="material-icons">&#xE05F;</i></a></li>
+        <li><a href="#">Tags<i class="material-icons">&#xE54E;</i></a></li>
+        <li class="divider"></li>
+        <li class="create-song-button"><a href="#">Create Song<i class="material-icons">&#xE147;</i></a></li>
+        <li><a href="#">Settings<i class="material-icons">&#xE8B8;</i></a></li>
+    </ul>
     <!--Load libraries-->
     <script type="text/javascript" src="Scripts/jquery-3.1.1.min.js"></script>
     <script type="text/javascript" src="js/materialize.js"></script>

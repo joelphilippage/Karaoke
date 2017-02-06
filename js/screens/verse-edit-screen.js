@@ -20,8 +20,8 @@ var $content = $('.content'),
 	$verseMenu = $('<ul id="verse-menu" class="side-nav"></ul>'),
 	$verseMenuButton = $('<li><a href="#" data-activates="verse-menu" data-position="bottom" data-tooltip="Open the verse drawer" class="verse-menu-collapse tooltipped"><i class="material-icons">&#xE03D;</i></a></li>'),
 	$saveSongButton = $('<li><a href="#" data-position="bottom" data-tooltip="Save" class="song-properties-button tooltipped"><i class="material-icons">&#xE161;</i></a></li>'),
-	$editSongPropertiesButton = $('<li><a href="#" data-position="bottom" data-tooltip="Edit properties" class="tags-button tooltipped"><i class="material-icons">&#xE54E;</i></a></li>'),
-	$toggleEditButton = $('<li><a href="#" data-position="bottom" data-tooltip="Toggle edit mode" class="toggle-edit-button tooltipped"><i class="material-icons">&#xE254;</i></a></li>'),
+	$editSongPropertiesButton = $('<li><a href="#" data-position="bottom" data-tooltip="Edit properties" class="tags-button tooltipped"><i class="material-icons">label</i></a></li>'),
+	$toggleMode = $('<li><a href="#" data-position="bottom" data-tooltip="Display Mode" class="toggle-edit-button tooltipped"><i class="material-icons">&#xE063;</i></a></li>'),
 	$textBox;
 
 //  Workable  Song
@@ -32,24 +32,20 @@ var verseIndex = 0,
     lastSelectedChord,
     lastSelectedVerse,
 	range,
-        verseAreaText;
+    verseAreaText;
 
 //  Booleans
-var previouslySaved = false;
+var previouslySaved = false,
+    editMode = true;
 
 // Constants
 var PRE_XPATH = '/HTML[1]/BODY[1]/DIV[1]/DIV[1]/DIV[1]/';
 
 // Chord Data
-var chordsText = '{ "A": null,' +
-    '"A#": null,' +
-    '"A#4": null,' +
-    '"A#7": null,' +
-    '"A#dim": null,' +
-    '"A#m": null,' +
-    '"A#m7": null,' +
-
-    '"Gsus4": null' +
+var chordsText = '{ "G": null,' +
+    '"Em": null,' +
+    '"C": null,' +
+    '"D": null' +
     '}';
 
 //  Menu Items
@@ -158,7 +154,7 @@ function verseEditInit() {
     $verseContainer.append($verseArea);
 }
 
-function loadVerseEditScreen(songToEdit) {
+function loadVerseEditScreen(song) {
     // Update Styles
     $body.css('background-color', 'black');
     $content.css({
@@ -171,11 +167,12 @@ function loadVerseEditScreen(songToEdit) {
     // Add Elements to screen
     $body.append($verseMenu);
     $content.append($verseContainer);
-    $('#header-menu').append($toggleEditButton).append($editSongPropertiesButton).append($saveSongButton).append($verseMenuButton);
-    if (songToEdit) {
+    $('#header-menu').append($toggleMode).append($editSongPropertiesButton).append($saveSongButton).append($verseMenuButton);
+    if (song) {
         previouslySaved = true;
-        CurrentSong = songToEdit;
-        $verseArea.html(songToEdit.verses[0].html);
+        CurrentSong = song;
+        $verseArea.html(song.verses[0].html);
+        GoToDisplayMode();
     } else {
         previouslySaved = false;
         CurrentSong = new song();
@@ -213,7 +210,7 @@ function loadVerseEditScreen(songToEdit) {
                 }
                     // Toggle Edit Mode
                 else if (String.fromCharCode(e.which).toLowerCase() === 'e') {
-                    toggleEditMode();
+                    $toggleMode.click();
                     return false;
                 }
             }
@@ -248,14 +245,12 @@ function loadVerseEditScreen(songToEdit) {
         if ($verseArea.attr('contenteditable') && window.getSelection().getRangeAt(0).startOffset != window.getSelection().getRangeAt(0).endOffset) ContextMenu.show(e.pageX, e.pageY, verseContextItems);
         return false;
     }).bind('blur keyup paste copy cut mouseup ondrag selectionchange input', function () { //detect any change to the verse area
+        $verseArea.contents().filter(function () { return this.nodeType === 3 }).wrap('<p />'); // Wrap all empty text nodes with p tags
+
         if (verseAreaText != $verseArea.text()) {
             Chords.refresh();
             Verse.update();
         }
-    });
-    // Toggle Edit Button
-    $toggleEditButton.click(function () {
-        toggleEditMode();
     });
     // Edit Song Properties
     $editSongPropertiesButton.click(function () {
@@ -313,6 +308,16 @@ function loadVerseEditScreen(songToEdit) {
     // Verse Menu Button
     $('.verse-menu-collapse').click(function () {
         Verse.updateMenu();
+    });
+    // Edit Mode Button
+    $toggleMode.click(function () {
+        $('.material-tooltip').remove();
+        if(editMode)
+            GoToDisplayMode();
+        else // display mode
+            GoToEditMode();
+
+        $('.tooltipped').tooltip({ delay: 50 });
     });
     /////////////////////////////////////////////////////////////////////////////////////////////////////
 }
@@ -393,28 +398,6 @@ function saveButton() {
     }
 }
 
-function toggleEditMode() {
-    if ($verseArea.attr('contenteditable')) {
-        $verseArea.removeAttr('contenteditable');
-        $verseArea.css({
-            'user-select': 'none',
-            'border': 'none',
-            'cursor': 'context-menu'
-        });
-        $content.css('min-height', '100%');
-        $('header').css({'position': 'absolute', 'width': '100%'});
-        $('header').animate({ 'top': '-' + $('header').height() + 'px' }, 250);
-        $('.has-chord').css('background', 'none');
-    } else {
-        $verseArea.attr('contenteditable', 'true');
-        $verseArea.removeAttr('style');
-        $content.css({ 'min-height': 'calc(100% - 64px)', 'overflow': 'auto' });
-        $('header').removeAttr('style');
-        $('.has-chord').removeAttr('style');
-    }
-    Chords.refresh();
-}
-
 function makeXPath (node, currentPath) {
     /* this should suffice in HTML documents for selectable nodes, XML with namespaces needs more code */
     currentPath = currentPath || '';
@@ -452,9 +435,37 @@ function getSelectionX() {
     return selectObj
 }
 
+function GoToDisplayMode() {
+    $toggleMode.html('<a href="#" data-position="bottom" data-tooltip="Edit Mode" class="toggle-edit-button tooltipped"><i class="material-icons">&#xE254;</i></a>');
+
+    $verseArea.removeAttr('contenteditable');
+    $verseArea.css({ 'border': 'none', 'user-select': 'none', 'cursor': 'default' });
+    editMode = false;
+    NavBar.hide();
+    Chords.refresh();
+}
+
+function GoToEditMode() {
+    $toggleMode.html('<a href="#" data-position="bottom" data-tooltip="Display Mode" class="toggle-edit-button tooltipped"><i class="material-icons">&#xE063;</i></a>');
+    $verseArea.attr('contenteditable', 'true');
+    $verseArea.removeAttr('style');
+    $('.has-chord').removeAttr('style');
+    editMode = true;
+    NavBar.show();
+}
+
 Array.prototype.move = function (from, to) {
     this.splice(to, 0, this.splice(from, 1)[0]);
 };
+
+$(document).mousemove(function (e) {
+    if (!editMode) { // If user is in view mode
+        if (e.clientY < $('nav').height())
+            NavBar.show();
+        else if (e.clientY > $('nav').height())
+            NavBar.hide();
+    }
+});
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 // Constructors
@@ -609,6 +620,9 @@ var Chords = {
             if ($verseArea.attr('contenteditable')) ContextMenu.show(e.pageX, e.pageY, chordWordContextItems);
             return false;
         });
+
+        if(!editMode)
+            $('.has-chord').css('background', 'none');
     }
 }
 
@@ -711,6 +725,28 @@ var Verse = {
                 ContextMenu.show(e.pageX, e.pageY, verseButtonContextItems);
             }
         });
+    }
+}
+
+var NavBar = {
+    visible: true,
+    show: function () {
+        if (this.visible == false) {
+            this.visible = true;
+            $('nav').animate({ 'top': '0px' }, 250);
+            $('.navbar-fixed').height(64);
+            $('.content').css('min-height', ($('body').height() - 64) + 'px');
+            Chords.refresh();
+        }
+    },
+    hide: function () {
+        if (this.visible == true && !editMode) {
+            this.visible = false;
+            $('nav').animate({ 'top': '-' + $('nav').height() + 'px' }, 250);
+            $('.navbar-fixed').height(0);
+            $('.content').css('min-height', '100%');
+            Chords.refresh();
+        }
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////

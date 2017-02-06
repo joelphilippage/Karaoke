@@ -8,10 +8,11 @@ html {height: 100%;}
  
 body {
     height: 100%;
+    z-index: 0;
  }
 
 .content {
-    display:block;
+    display: block;
 }
 
 .verse-container {
@@ -24,7 +25,6 @@ body {
 #verse-area, .verse-menu-button {
 	font-family: var(--main-font-family);
 	background: var(--main-bg-color);
-	border: none;
 	outline: none;
 	padding: 0;
 	color: var(--main-fg-color);
@@ -103,7 +103,7 @@ p {margin: 0;}
  
 	.verse-menu-button .contains-chord {margin-top: 0;}
 
-.title-menu-item, .title-menu-item a {
+#title-menu-item, #title-menu-item a, #title-menu-item i {
     height: 64px;
     line-height: 64px;
     font-size: 2.1rem;

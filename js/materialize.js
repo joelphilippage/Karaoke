@@ -3148,10 +3148,10 @@ $(document).ready(function(){
           // Perform search
           $input.on('keyup', function (e) {
             // Capture Enter
-            //if (e.which === 13) {
-            //  $autocomplete.find('li').first().click();
-            //  return;
-            //}
+            if (e.which === 13) {
+              $autocomplete.find('li').first().click();
+              return;
+            }
 
             var val = $input.val().toLowerCase();
             $autocomplete.empty();
