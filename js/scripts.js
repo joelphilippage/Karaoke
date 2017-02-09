@@ -45,7 +45,7 @@ $(window).resize(function () {
         // Check if current element is not editable and key pressed is not up or down
         if (searchDeselected)
             searchDeselected = false;
-        else if ($(document.activeElement).attr('contenteditable') != 'true' && ($(document.activeElement).is('input') == false || $('#search-label').hasClass('active')) && e.keyCode != 38 && e.keyCode != 40)
+        else if (!editMode && ($(document.activeElement).is('input') == false || $('#search-label').hasClass('active')) && e.keyCode != 37 && e.keyCode != 38 && e.keyCode != 39 && e.keyCode != 40)
             RunSearch(e);
     }
 });

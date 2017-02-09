@@ -83,7 +83,10 @@ p {margin: 0;}
 .button-container {
 	height: 100px;
 	background: var(--main-bg-color);
-	margin: 5px;
+	margin-top: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 5px;
 	cursor: pointer;
  }
  

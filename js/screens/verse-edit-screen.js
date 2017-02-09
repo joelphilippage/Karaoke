@@ -17,7 +17,7 @@ var $content = $('.content'),
 	$verseContainer = $('<div class="verse-container"></div>'),
 	$verseArea = $('<div contenteditable="true" tabindex="0" id="verse-area"></div>'),
 	$contextMenu = $('<ul id="context-menu"></ul>'),
-	$verseMenu = $('<ul id="verse-menu" class="side-nav"></ul>'),
+	$verseMenu = $('<div id="verse-menu" class="side-nav"></div>'),
 	$verseMenuButton = $('<li><a href="#" data-activates="verse-menu" data-position="bottom" data-tooltip="Open the verse drawer" class="verse-menu-collapse tooltipped"><i class="material-icons">&#xE03D;</i></a></li>'),
 	$saveSongButton = $('<li><a href="#" data-position="bottom" data-tooltip="Save" class="song-properties-button tooltipped"><i class="material-icons">&#xE161;</i></a></li>'),
 	$editSongPropertiesButton = $('<li><a href="#" data-position="bottom" data-tooltip="Edit properties" class="tags-button tooltipped"><i class="material-icons">label</i></a></li>'),
@@ -25,7 +25,7 @@ var $content = $('.content'),
 	$textBox;
 
 //  Workable  Song
-var CurrentSong = new song();
+var CurrentSong = new Song();
 
 //  Integers
 var verseIndex = 0,
@@ -172,11 +172,12 @@ function loadVerseEditScreen(song) {
         previouslySaved = true;
         CurrentSong = song;
         $verseArea.html(song.verses[0].html);
+        Chords.addToHTML();
         GoToDisplayMode();
     } else {
         previouslySaved = false;
-        CurrentSong = new song();
         $verseArea.html('<p>Type verse here.</p>');
+        CurrentSong = new Song();
         CurrentSong.appendVerse($verseArea.html());
     }
     $('.verse-menu-collapse').sideNav({
@@ -205,7 +206,7 @@ function loadVerseEditScreen(song) {
                 }
                     // Save Song
                 else if (String.fromCharCode(e.which).toLowerCase() === 's') {
-                    saveButton();
+                    $saveSongButton.click();
                     return false;
                 }
                     // Toggle Edit Mode
@@ -214,7 +215,7 @@ function loadVerseEditScreen(song) {
                     return false;
                 }
             }
-            if (!$verseArea.attr('contenteditable')) { // If not in edit mode
+            if (!editMode) { // If not in edit mode
                 if (e.keyCode == 37) // left
                 {
                     if (verseIndex > 0)
@@ -278,7 +279,6 @@ function loadVerseEditScreen(song) {
             }
         });
         $songPopertiesModal.modal('open');
-        console.log(Library.books);
         var autoCompleteBooks = '{', i;
         for (i = 0; i < Library.books.length; i++)
         {
@@ -303,7 +303,24 @@ function loadVerseEditScreen(song) {
     });
     // Save Song Button
     $saveSongButton.click(function () {
-        saveButton();
+        if ($verseArea.attr('contenteditable')) {
+            if (CurrentSong.title) {
+                SaveSong(CurrentSong);
+            } else if (!$('#saveModal').length) {
+                var $saveModal = createModal('Save As', '<p>Please name the song.</p><p><input id="song-title" type="text" class="validate"><label for="song-title">Song Title</label></p>');
+                $('body').append($saveModal);
+                $saveModal.modal({
+                    complete: function () {
+                        if ($('#song-title').val()) {
+                            CurrentSong.title = $('#song-title').val();
+                            $(this).remove();
+                            checkIfSongExsists(CurrentSong);
+                        } else $(this).remove();
+                    }
+                });
+                $saveModal.modal('open');
+            }
+        }
     });
     // Verse Menu Button
     $('.verse-menu-collapse').click(function () {
@@ -327,18 +344,18 @@ function createModal(title, contents, position) {
     else return $('<div id="' + title + '" class="modal"><div class="modal-content"><h4>' + title + '</h4><p>' + contents + '</p></div><div class="modal-footer"><a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Okay</a></div></div>');
 }
 
-function SaveSong(song) {
-    if (previouslySaved) runSave(song);
+function checkIfSongExists(song) {
+    if (previouslySaved) saveSong(song);
     else {
         var URL;
         if (song.book.title != '') // If song is in a book
-            URL = 'library/' + song.book.title + '/' + song.title + '.json';
-        else URL = 'library/' + song.title + '.json';
+            URL = 'library/' + song.book.title + '/' + song.title.replace(':', '-') + '.json';
+        else URL = 'library/' + song.title.replace(':', '-') + '.json';
         $.ajax({
             url: URL,
             type: 'HEAD',
             error: function () {
-                runSave(song);
+                saveSong(song);
             },
             success: function () {
                 // If this is a new song and file already exists
@@ -346,7 +363,7 @@ function SaveSong(song) {
                 $('body').append($replaceSongModal);
                 $replaceSongModal.modal({
                     complete: function () {
-                        runSave(song);
+                        saveSong(song);
                         $(this).remove();
                     }
                 });
@@ -356,7 +373,7 @@ function SaveSong(song) {
     }
 }
 
-function runSave(song) {
+function saveSong(song) {
     Chords.refresh();
     Verse.update();
     var data = JSON.stringify(CurrentSong);
@@ -375,27 +392,6 @@ function runSave(song) {
             }
         }
     });
-}
-
-function saveButton() {
-    if ($verseArea.attr('contenteditable')) {
-        if (CurrentSong.title) {
-            SaveSong(CurrentSong);
-        } else if (!$('#saveModal').length) {
-            var $saveModal = createModal('Save As', '<p>Please name the song.</p><p><input id="song-title" type="text" class="validate"><label for="song-title">Song Title</label></p>');
-            $('body').append($saveModal);
-            $saveModal.modal({
-                complete: function () {
-                    if ($('#song-title').val()) {
-                        CurrentSong.title = $('#song-title').val();
-                        $(this).remove();
-                        SaveSong(CurrentSong);
-                    } else $(this).remove();
-                }
-            });
-            $saveModal.modal('open');
-        }
-    }
 }
 
 function makeXPath (node, currentPath) {
@@ -440,9 +436,9 @@ function GoToDisplayMode() {
 
     $verseArea.removeAttr('contenteditable');
     $verseArea.css({ 'border': 'none', 'user-select': 'none', 'cursor': 'default' });
+    $body.css('overflow', 'hidden');
     editMode = false;
     NavBar.hide();
-    Chords.refresh();
 }
 
 function GoToEditMode() {
@@ -450,13 +446,10 @@ function GoToEditMode() {
     $verseArea.attr('contenteditable', 'true');
     $verseArea.removeAttr('style');
     $('.has-chord').removeAttr('style');
+    $body.css('overflow', 'visible');
     editMode = true;
     NavBar.show();
 }
-
-Array.prototype.move = function (from, to) {
-    this.splice(to, 0, this.splice(from, 1)[0]);
-};
 
 $(document).mousemove(function (e) {
     if (!editMode) { // If user is in view mode
@@ -610,7 +603,7 @@ var Chords = {
                 chordWidth = $chord.width();
 
                 // Update chord position
-                $chord.css({'left': (pos.left + (width / 2) - (chordWidth / 2)) + 'px', 'top': (pos.top - (height / 2)) + 'px'})
+                $chord.css({ 'left': (pos.left + (width / 2) - (chordWidth / 2)) + 'px', 'top': (pos.top - (height / 2)) + 'px' });
             }
         }
 
@@ -660,8 +653,10 @@ var Verse = {
             else if (verseIndex == lastSelectedVerse - 1)
                 verseIndex = verseIndex + 1;
 
-            CurrentSong.verses.move(lastSelectedVerse, lastSelectedVerse - 1);
-            
+            var verseToMove = CurrentSong.verses[lastSelectedVerse]; // Save Verse
+            CurrentSong.verses.splice(lastSelectedVerse, 1); // Remove the verse
+            CurrentSong.verses.splice(lastSelectedVerse - 1, 0, verseToMove);
+
             this.updateMenu();
         }
     },
@@ -673,10 +668,66 @@ var Verse = {
             else if (verseIndex == lastSelectedVerse + 1)
                 verseIndex = verseIndex - 1;
 
-            CurrentSong.verses.move(lastSelectedVerse, lastSelectedVerse + 1);
+            var verseToMove = CurrentSong.verses[lastSelectedVerse]; // Save Verse
+            CurrentSong.verses.splice(lastSelectedVerse, 1); // Remove the verse
+            CurrentSong.verses.splice(lastSelectedVerse + 1, 0, verseToMove);
             
             this.updateMenu();
         }
+    },
+    allowDrop: function(e) {
+        e.preventDefault();
+    },
+    drag: function (e) {
+        var $verseButton = $('#' + e.target.id),
+            offsetY = e.pageY - $verseButton.position().top,
+            height = $verseButton.height(),
+            margin = parseInt($verseButton.css('margin')); // Get to offset to the top of the button
+
+        // Wait for a frame to pass so a copy can be made before making the button invisible
+        window.requestAnimationFrame(function () {
+            $verseButton.css('opacity', '0');
+        });
+        e.dataTransfer.setData("verse", e.target.id);
+
+        // Event for while dragging
+        $verseButton.on('drag', function (e) {
+            var elementTopY = e.pageY - offsetY,
+                $previousButton = $($('.button-container')[$verseButton.index() - 1]),
+                $nextButton = $($('.button-container')[$verseButton.index() + 1]);
+
+            // Check if dragged element is above previous button or after next
+
+            if($previousButton.length && elementTopY < $previousButton.position().top) // If a previous button exists and the dragged verse button is above it
+            {
+                $previousButton.css('margin-bottom', height + (margin * 2) + 'px');
+                $verseButton.css({ 'height': '0px', 'margin': '0px' });
+
+                $verseButton.insertBefore($previousButton); // Moved dragged verse before
+
+                $previousButton.animate({ marginBottom: margin + 'px' }, 250);
+                $verseButton.animate({ 'height': height + 'px', 'margin': margin + 'px' }, 250);
+            }
+            else if ($nextButton.length && elementTopY > $nextButton.position().top) // If a next button exists and the dragged verse is below it
+            {
+                // Animate verse transition
+                
+                $nextButton.css('margin-top', 100 + (margin*2) + 'px');
+                $verseButton.css({ 'height': '0px', 'margin': '0px' });
+
+                $verseButton.insertAfter($nextButton); // Move dragged verse after
+
+                $nextButton.animate({ marginTop: margin + 'px' }, 250);
+                $verseButton.animate({ 'height': height + 'px', 'margin': margin + 'px' }, 250);
+            }
+        });
+    },
+    drop: function(e) {
+        var data = e.dataTransfer.getData("verse");
+        $('#' + data).animate({ 'opacity': '1' }, 10, function () {
+            Verse.updateOrderFromMenu();
+        });
+        e.preventDefault();
     },
     changeToIndex: function (index) {
         // Update current verse button to html without chord words
@@ -687,11 +738,12 @@ var Verse = {
         Chords.refresh();
     },
     update: function () { // Saves the current verse into the song data
-        Chords.refresh();
-        var $copy = $verseArea.clone();
-        $copy.find('span').replaceWith(function () { return $(this).text(); });
-        $copy.find('.contains-chord').replaceWith(function () { return '<p>' + $(this).html() + '</p>'; });
-        CurrentSong.verses[verseIndex].html = $copy.html();
+        Chords.refresh(); // Update chord positions
+        var $copy = $verseArea.clone(); // Make a copy of the current verse
+        $copy.find('span').replaceWith(function () { return $(this).text(); }); // Remove all chords
+        $copy.find('.contains-chord').replaceWith(function () { return '<p>' + $(this).html() + '</p>'; }); // remove line formatting
+        $copy.find('.chord').remove(); // Remove all chords
+        CurrentSong.verses[verseIndex].html = $copy.html(); // Save into data
     },
     updateMenu: function () {
         Verse.update();
@@ -703,7 +755,7 @@ var Verse = {
         for (i = 0; i < CurrentSong.verses.length; i++) {
             var selectedClass = '';
             if (i == verseIndex) selectedClass = 'selected';
-            var $menuButton = $('<div class="verse-container button-container ' + selectedClass + '" id="verse-button-' + i + '"><div class="verse-menu-button">' + CurrentSong.verses[i].html + '</div></div>');
+            var $menuButton = $('<div class="verse-container button-container ' + selectedClass + '" id="verse-button-' + i + '" draggable="true" ondragstart="Verse.drag(event)" ><div class="verse-menu-button">' + CurrentSong.verses[i].html + '</div></div>');
             $('#verse-menu').append($menuButton);
         }
 
@@ -725,6 +777,26 @@ var Verse = {
                 ContextMenu.show(e.pageX, e.pageY, verseButtonContextItems);
             }
         });
+    },
+    updateOrderFromMenu: function() {
+        var i,
+            found = false;
+        for (i = 0; i < $('.button-container').length; i++)
+        {
+            var buttonAtIndex = $($('.button-container')[i]), // This is the button going from top to bottom
+                buttonsPreviousIndex = parseInt(buttonAtIndex.attr('id').replace('verse-button-', ''));
+            if (buttonAtIndex.hasClass('selected'))
+                verseIndex = i;
+
+            if(i != buttonsPreviousIndex && !found)
+            {
+                var savedVerse = CurrentSong.verses[buttonsPreviousIndex];
+
+                CurrentSong.verses.splice(buttonsPreviousIndex, 1);
+                CurrentSong.verses.splice(i, 0, savedVerse);
+                found = true;
+            }
+        }
     }
 }
 
@@ -734,18 +806,26 @@ var NavBar = {
         if (this.visible == false) {
             this.visible = true;
             $('nav').animate({ 'top': '0px' }, 250);
-            $('.navbar-fixed').height(64);
-            $('.content').css('min-height', ($('body').height() - 64) + 'px');
-            Chords.refresh();
+            $('.navbar-fixed').animate({ 'height': '64px' }, 250);
+            $('.content').animate({ 'min-height': ($('body').height() - 64) + 'px' }, {
+                duration: 250, step: function () {
+                    Chords.refresh();
+                }
+            });
         }
     },
     hide: function () {
         if (this.visible == true && !editMode) {
             this.visible = false;
             $('nav').animate({ 'top': '-' + $('nav').height() + 'px' }, 250);
-            $('.navbar-fixed').height(0);
-            $('.content').css('min-height', '100%');
-            Chords.refresh();
+            $('.navbar-fixed').animate({ 'height': '0px' }, 250, function () {
+                Chords.refresh();
+            });
+            $('.content').animate({ 'min-height': $('body').height() + 'px' }, {
+                duration: 250, step: function () {
+                    Chords.refresh();
+                }
+            });
         }
     }
 }

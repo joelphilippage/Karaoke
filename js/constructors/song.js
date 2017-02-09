@@ -1,9 +1,9 @@
-﻿function song()
+﻿function Song()
 {
     this.title = '';
     this.subtitle = '';
     this.index = 0;
-    this.book = new book();
+    this.book = new Book();
     this.verses = new Array();
     this.tags = new Array();
     this.appendVerse = function (verseHTML) {

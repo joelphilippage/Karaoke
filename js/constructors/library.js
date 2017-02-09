@@ -13,7 +13,7 @@
         for (v = 0; v < song.verses.length; v++) {
             var htmlTagRegex =/\s*(<[^>]*>)/g,
                 verseLines = song.verses[v].html.split(htmlTagRegex), 
-                l;
+                l,c;
             for (l = 0; l < verseLines.length; l++) {
                 if (!/<[a-z][\s\S]*>/i.test(verseLines[l]) && $.inArray({ text: verseLines[l], object: song }, this.searchItems) == -1) // If the line does not contain html and has not already been added
                 {
@@ -21,6 +21,7 @@
                 }
             }
         }
+
     },
     searchItems : new Array(),
     addSearchItem : function (text, object)

@@ -142,7 +142,7 @@ function displaySongs(key, ascending, book) {
             bookHTML = '<div class="col s3">' + songs[i].book.title + '</div>';
         else
             bookHTML = '';
-        var $songCollectionItem = $('<a href="#" id="song-item-' + i + '" class="collection-item"><div class="row"><div class="col s6">' + songs[i].title + ' <i>' + songs[i].subtitle + '</i></div>' + bookHTML + '<div class="col right"><span>' + songs[i].index + '</span></div></div>');
+        var $songCollectionItem = $('<a href="#" id="song-item-' + i + '" class="collection-item gray-text darken-4"><div class="row"><div class="col s6">' + songs[i].title + ' <i>' + songs[i].subtitle + '</i></div>' + bookHTML + '<div class="col right"><span>' + songs[i].index + '</span></div></div>');
         $songsCollection.append($songCollectionItem);
     }
 }
