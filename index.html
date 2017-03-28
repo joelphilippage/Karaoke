@@ -36,7 +36,7 @@
         <div class="navbar-fixed">
             <nav>
                 <div class="nav-wrapper light-green darken-1">
-                    <a href="#" data-activates="side-menu" class="button-collapse show-on-large"><i class="material-icons">menu</i></a>
+                    <a href="#" data-activates="side-menu" id="menu-activation" class="button-collapse show-on-large"><i class="material-icons">menu</i></a>
                     <ul class="right" id="header-menu"></ul>
 
                     <a href="#!" class="brand-logo">Karaoke</a>
@@ -70,12 +70,27 @@
         <li id="title-menu-item"><a href="#">Karaoke<i class="material-icons">&#xE5D2;</i></a></li>
         <li id="books-button"><a href="#">Books<i class="material-icons">&#xE865;</i></a></li>
         <li id="songs-button"><a href="#">Songs<i class="material-icons">&#xE405;</i></a></li>
-        <li><a href="#">Playlists<i class="material-icons">&#xE05F;</i></a></li>
-        <li><a href="#">Tags<i class="material-icons">&#xE54E;</i></a></li>
+        <li id="playlists-button"><a href="#">Playlists<i class="material-icons">&#xE05F;</i></a></li>
+        <li id="tags-button"><a href="#">Tags<i class="material-icons">&#xE54E;</i></a></li>
         <li class="divider"></li>
         <li class="create-song-button"><a href="#">Create Song<i class="material-icons">&#xE147;</i></a></li>
-        <li><a href="#">Settings<i class="material-icons">&#xE8B8;</i></a></li>
+        <li id="settings-button"><a href="#">Settings<i class="material-icons">&#xE8B8;</i></a></li>
     </ul>
+    <a class='dropdown-button btn' href='#' data-activates='context-menu'></a>
+    <ul id="context-menu" class="dropdown-content"></ul>
+
+    <a class='dropdown-song-button btn' href='#' data-activates='song-context-menu'></a>
+    <ul id="song-context-menu" class="dropdown-content">
+        <li><a id="add-playlist-btn">Add to playlist<i class="material-icons">&#xE037;</i></a></li>
+        <li class="divider"></li>
+        <li><a>Edit info</a></li>
+    </ul>
+
+    <a class="dropdown-playlists-menu" data-activates="playlists-menu"></a>
+    <ul id="playlists-menu" class="dropdown-content">
+        <li id="new-playlist-button"><a>New playlist</a></li>
+    </ul>
+
     <!--Load libraries-->
     <script type="text/javascript" src="Scripts/jquery-3.1.1.min.js"></script>
     <script type="text/javascript" src="js/materialize.js"></script>
@@ -85,14 +100,24 @@
     <script type="text/javascript" src="js/constructors/song.js"></script>
     <script type="text/javascript" src="js/constructors/book.js"></script>
     <script type="text/javascript" src="js/constructors/library.js"></script>
+    <script type="text/javascript" src="js/constructors/tag.js"></script>
+    <script type="text/javascript" src="js/constructors/playlist.js"></script>
     <script type="text/javascript" src="js/constructors/searchItem.js"></script>
+    <script type="text/javascript" src="js/constructors/context-menu.js"></script>
+
+    <!--Helpers-->
+    <script type="text/javascript" src="js/helpers.js"></script>
+
+    <!--Load main script-->
+    <script type="text/javascript" src="js/scripts.js"></script>
 
     <!--Load other scenes-->
     <script type="text/javascript" src="js/screens/songs-screen.js"></script>
     <script type="text/javascript" src="js/screens/verse-edit-screen.js"></script>
     <script type="text/javascript" src="js/screens/books-screen.js"></script>
-
-    <!--Load main script-->
-    <script type="text/javascript" src="js/scripts.js"></script>
+    <script type="text/javascript" src="js/screens/settings-screen.js"></script>
+    <script type="text/javascript" src="js/screens/tags-screen.js"></script>
+    <script type="text/javascript" src="js/screens/playlists-screen.js"></script>
+    
 </body>
 </html>

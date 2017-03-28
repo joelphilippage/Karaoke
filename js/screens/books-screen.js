@@ -22,8 +22,8 @@ var $emptyStateCard = $('<div class="card light-green darken-3"><div class="card
 
 // Functions
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-function booksScreenInit(GoToVerseEditScreen, GoToSongScreen) {
-    $(".content").html('<div id="books-container" class="row"></div>');
+function booksScreenInit() {
+    $content.html('<div id="books-container" class="row"></div>');
     if (Library.songs.length > 0) {
         if(Library.books.length > 0)
         {
@@ -33,12 +33,12 @@ function booksScreenInit(GoToVerseEditScreen, GoToSongScreen) {
                 $('#books-container').append(createCard(Library.books[i].title, Library.books[i].image, i));
             }
             $('.book-card').click(function () {
-                GoToSongScreen(GoToVerseEditScreen, Library.books[$(this).attr('id').replace('book-card-', '')]);
+                GoToSongScreen(Library.books[$(this).attr('id').replace('book-card-', '')]);
             });
         }
     }
     else
-        $('.content').append($emptyStateCard);
+        $content.append($emptyStateCard);
     $('.create-song-button').click(function () {
         GoToVerseEditScreen();
     });
@@ -47,6 +47,6 @@ function booksScreenInit(GoToVerseEditScreen, GoToSongScreen) {
 function createCard(title, img, id) {
     if (!img.trim())
         img = 'img/placeholder-book.jpg';
-    return $('<div class="col s12 m4 l3 card book-card" id="book-card-' + id + '"><div class="card-image waves-effect waves-block waves-light"><img class="activator" src="' + img + '"></div><div class="card-content"><span class="card-title activator grey-text text-darken-4 truncate">' + title + '</span></div></div>');
+    return $('<div class="col s12 m6 l4 card book-card hoverable waves-effect" id="book-card-' + id + '"><div class="card-image waves-effect waves-block waves-light"><img src="' + img + '"></div><div class="card-content"><span class="card-title truncate">' + title + '</span></div></div>');
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////

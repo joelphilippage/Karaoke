@@ -1,11 +1,11 @@
 ﻿/* Variables
     Main background color: var(--main-bg-color);
     Main foreground color: var(--main-fg-color);
-    Main font famil: var(--main-font-family);
+    Main font family: var(--main-font-family);
     Main outline color: var(--main-outline-color);
 */
 html {height: 100%;}
- 
+
 body {
     height: 100%;
     z-index: 0;
@@ -17,10 +17,14 @@ body {
 
 .verse-container {
     flex: 1;
-	display: flex;
-	align-items: var(--verse-alignment);
-	justify-content: center;
- }
+    display: flex;
+    align-items: var(--verse-alignment);
+    justify-content: center;
+}
+.instruction {
+    color: gray;
+    font-style: italic;
+}
 
 #verse-area, .verse-menu-button {
 	font-family: var(--main-font-family);
@@ -38,27 +42,18 @@ body {
     border:dashed;
     border-width: 1px;
 }
- 
+
 #context-menu {
-	font-family: var(--main-font-family);
-	font-size: 16px;
-    width: 150px;
-	background: var(--main-bg-color);
-	color: var(--main-fg-color);
-	position: absolute;
-	display: none;
-	list-style: none;
-	border: 1px solid var(--main-outline-color);
+    position: absolute;
     z-index: 1000;
- }
- 
-	#context-menu li {padding: 5px;}
- 
-		#context-menu li:hover {
-            cursor: pointer;
-            background: var(--main-outline-color);
-		}
- 
+}
+
+.dropdown-button
+{
+    display: none;
+    width: 150px;
+}
+
 .chord {
 	font-family: var(--main-font-family);
 	font-size: var(--chord-font-size);
@@ -66,20 +61,20 @@ body {
 	position: absolute;
 	color: magenta;
  }
- 
+
 .has-chord {background: var(--main-outline-color);}
- 
+
 .contains-chord {margin-top: var(--chord-font-size);}
- 
+
 
 .side-menu {
 	width: 200px;
 	height: 100%;
 	background-color: gray;
  }
- 
+
 p {margin: 0;}
- 
+
 .button-container {
 	height: 100px;
 	background: var(--main-bg-color);
@@ -88,12 +83,37 @@ p {margin: 0;}
     margin-right: 5px;
     margin-bottom: 5px;
 	cursor: pointer;
+    border: 3px solid var(--main-bg-color);
  }
- 
+
 .selected {
 	border: 3px solid var(--accent-color);
+    padding: 0;
  }
- 
+
+.verse-menu-label {
+    position: absolute;
+    overflow: visible;
+    color: white;
+    text-align: left;
+    padding: 0 12px 70px 12px;
+    font-size: 10px;
+    width: 100%;
+    pointer-events:none;
+}
+.verse-menu-label div {
+    pointer-events:none;
+}
+.verse-menu-label span {
+    background-color: var(--accent-color);
+    padding: 2px 5px 2px 5px;
+    pointer-events:none;
+}
+.verse-menu-label i {
+    display: inline;
+    pointer-events:none;
+}
+
 .verse-menu-button {
 	width: calc(100% - 10px);
 	font-size: calc(var(--verse-font-size) * .15);
@@ -101,9 +121,9 @@ p {margin: 0;}
 	user-select: none;
     pointer-events:none;
  }
- 
+
 	.verse-menu-button .has-chord {background: none;}
- 
+
 	.verse-menu-button .contains-chord {margin-top: 0;}
 
 #title-menu-item, #title-menu-item a, #title-menu-item i {
@@ -130,18 +150,15 @@ p {margin: 0;}
     user-select: none;
 }
 
+.collection-item .row .col {
+    height: 22px;
+}
+
 .book-card {
     margin: 15px;
     padding: 0;
 }
 
-.book-card .card-content {
-    padding: 0 10px 0 10px;
-}
-
-.book-card .card-content .card-title {
-    font-size: 20px;
-}
 
 .row .col {
     padding: 0;
@@ -164,6 +181,8 @@ p {margin: 0;}
     padding: 0.5rem 0 0.5rem 0;
     margin: 0;
     display: none;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
 }
 #search-results .collection-item {
     border-bottom: none;
@@ -177,5 +196,36 @@ p {margin: 0;}
 
 .collection a.collection-item:not(.active):hover, .collection .collection-item.active {
     background-color: #ddd;
-    color: #26a69a;
+    color: #616161;
+}
+    .collection a.collection-item:not(.active):hover .song-more-button, .collection .collection-item.active .song-more-button {
+        opacity: 100;
+    }
+    .collection a.collection-item .song-more-button {
+        margin-right: 25px;
+        opacity: 0;
+        float: right;
+        display: inline;
+        height: 22px;
+    }
+.book-title-link {
+    color: #000;
+}
+
+.collection a.collection-item {
+    color: #616161;
+}
+.book-title-link:hover {
+    text-decoration: underline;
+}
+
+.song-title {
+    display: inline-block;
+    width: calc(100% - 75px);
+}
+
+.dropdown-song-button, .dropdown-playlists-menu {
+    display: none;
+    position: absolute;
+    z-index: 1000;
 }

@@ -4,6 +4,7 @@
 /// <reference path="constructors/library.js" />
 /// <reference path="constructors/book.js" />
 /// <reference path="constructors/song.js" />
+/// <reference path="helpers.js" />
 /// <reference path="../Scripts/jquery-3.1.1.intellisense.js" />
 
 "use strict";
@@ -17,7 +18,8 @@ var Songs = new Array(),
 
 // Booleans
 var songsLoaded = false,
-    searchDeselected = false;
+    searchDeselected = false,
+    songsLoaded = false;
 
 // Integers
 var totalSongs = 0;
@@ -37,16 +39,30 @@ $('.create-song-button').click(function () {
 $('#books-button').click(function () {
     GoToBookScreen();
 });
+$('#settings-button').click(function () {
+    GoToSettingsScreen();
+});
+$('#tags-button').click(function () {
+    GoToTagsScreen();
+});
+$('#playlists-button').click(function () {
+    GoToPlaylistsScreen();
+});
+
 // Window
 $(window).resize(function () {
     UpdateSearchBar();
+}).keypress(function (e) {
+    if ((((String.fromCharCode(e.keyCode).replace(/[\x00-\x1F\x7F-\x9F]/g, "") != '') && !e.ctrlKey) || e.keyCode == 8) &&
+        (($(document.activeElement).is('input') == false && document.activeElement.hasAttribute('contenteditable') == false) ||
+            $(document.activeElement).attr('id') == 'search')) {// If not editing text or the text is the search bar
+        e.preventDefault();
+    }
 }).keyup(function (e) {
-    if (!e.metaKey && !e.ctrlKey) {
-        // Check if current element is not editable and key pressed is not up or down
-        if (searchDeselected)
-            searchDeselected = false;
-        else if (!editMode && ($(document.activeElement).is('input') == false || $('#search-label').hasClass('active')) && e.keyCode != 37 && e.keyCode != 38 && e.keyCode != 39 && e.keyCode != 40)
-            RunSearch(e);
+    if ((((String.fromCharCode(e.keyCode).replace(/[\x00-\x1F\x7F-\x9F]/g, "") != '') && e.keyCode != 37 && e.keyCode != 39 && !e.ctrlKey) || e.keyCode == 8) &&
+        (($(document.activeElement).is('input') == false && document.activeElement.hasAttribute('contenteditable') == false) ||
+            $(document.activeElement).attr('id') == 'search')) {// If not editing text or the text is the search bar
+        RunSearch(e);
     }
 });
 
@@ -81,11 +97,19 @@ $('#search').keydown(function (e) {
             $($collection[0]).addClass('active');
         return false;
     }
+}).blur(function (e) {
+    $('#search').val('');
+    searchDeselected = true;
+    NavBar.hide();
+    $('#search-results').css('display', 'none');
 });
 
 // When all songs have loaded
 $(document).ajaxStop(function () {
-    GoToSongScreen();
+    if (!songsLoaded) {
+        songsLoaded = true;
+        GoToSongScreen();
+    }
 });
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -97,26 +121,68 @@ function init() {
         menuWidth: 250,
         closeOnClick: true
     });
+    LoadPlaylists();
     LoadSongs("library");
     UpdateSearchBar();
 }
 
-function GoToSongScreen() {
-    ResetMainArea();
-    songScreenInit(GoToVerseEditScreen);
-    UpdateSearchBar();
+function GoToSongScreen(book) {
+    ResetMainArea(function () {
+        Clear();
+        songScreenInit(book);
+        UpdateSearchBar();
+    });
 }
 
 function GoToVerseEditScreen(songToEdit) {
-    ResetMainArea();
-    loadVerseEditScreen(songToEdit);
-    UpdateSearchBar();
+    ResetMainArea(function () {
+        Clear();
+        loadVerseEditScreen(songToEdit);
+        UpdateSearchBar();
+    });
 }
 
 function GoToBookScreen() {
-    ResetMainArea();
-    booksScreenInit(GoToVerseEditScreen, songScreenInit);
-    UpdateSearchBar();
+    ResetMainArea(function () {
+        Clear();
+        booksScreenInit();
+        UpdateSearchBar();
+    });
+}
+
+function GoToSettingsScreen() {
+    ResetMainArea(function () {
+        Clear();
+        settingsScreenInit();
+        UpdateSearchBar();
+    });
+}
+
+function GoToTagsScreen() {
+    ResetMainArea(function () {
+        Clear();
+        loadTagsScreen();
+        UpdateSearchBar();
+    })
+}
+
+function GoToPlaylistsScreen() {
+    ResetMainArea(function () {
+        Clear();
+        loadPlaylistsScreen();
+        UpdateSearchBar();
+    })
+}
+
+function LoadPlaylists() {
+    $.ajax({
+        url: 'playlists.json',
+        success: function (data) {
+            for (var i = 0; i < data.length; i++) {
+                Library.addPlaylist(data[i]);
+            }
+        }
+    });
 }
 
 function LoadSongs(URL) {
@@ -144,7 +210,6 @@ function LoadSongs(URL) {
                             if (loadedSong.book && loadedSong.book.title && !ArrayContainsID(Library.books, loadedSong.book.title)) // If the book has been named and it is not already in library
                                 Library.addBook(loadedSong.book); // Add new book to library
                             Library.addSong(loadedSong); // Add song to library
-
                             $('.determinate').css('width', (Library.songs.length / totalSongs) * 100 + '%');
                         }
                     });
@@ -160,89 +225,106 @@ function LoadSong(filename, callback) {
     });
 }
 
-function ResetMainArea() {
-    $('.content').html('');
+function ResetMainArea(saveConfirmed) {
+    if (changesMade && editMode) {
+        var ConfirmSave = createModal('Changes were made', '<h6>Would you like to save?</h6>','<a href="#!" id="confirm-save-btn" class=" modal-action modal-close waves-effect waves-light-green btn-flat">Yes</a><a href="#!" class=" modal-action modal-close waves-effect waves-light-green btn-flat">No</a>');
+        $body.append(ConfirmSave);
+        ConfirmSave.modal({
+            dismissible: false,
+            ready: function () {
+                $('#confirm-save-btn').click(function () {
+                    saveSong(CurrentSong);
+                });
+            },
+            complete: function () {
+                changesMade = false;
+                Clear();
+                if(saveConfirmed)
+                    saveConfirmed();
+            }
+        });
+        ConfirmSave.modal('open');
+    }
+    else if(saveConfirmed)
+        saveConfirmed();
+}
+
+function Clear() {
+    $content.html('');
     $('.chord').remove();
     $('.modal').remove();
-    $('.content').removeAttr('style');
-    $('body').removeAttr('style');
+    $('.modal-overlay').remove();
+    $content.removeAttr('style');
+    $body.removeAttr('style');
     $('#header-menu').html('');
     $('header').removeAttr('style');
     GoToEditMode();
 }
 
-function UpdateSearchBar() {
-    $('.search-form').attr('style', 'margin: 0 ' + $('#header-menu').width() + 'px 0 ' + ($('.button-collapse').outerWidth(true) + $('.brand-logo').outerWidth(true) + 25) + 'px;');
-}
-
-function ArrayContainsID(array, title) {
-    var i;
-    for (i = 0; i < array.length; i++) {
-        if (array[i].title == title)
-            return true;
-    }
-    return false;
-}
-
-function RunSearch(e)
-{
-    if (!$('#search-label').hasClass('active')) { // If search form is not selected
-        var keypressed = String.fromCharCode(e.keyCode); // Set value of pressed key.
-        if (!e.shiftKey)
-            keypressed = keypressed.toLowerCase();
-        $('#search').focus(); // select search element
-        $('#search').val(keypressed);
-    }
-    var searchText = $('#search').val().toLowerCase(),
-        regEx = new RegExp(searchText, "ig"),
-        searchItems = Library.searchItems,
-        l,
-        searchResults = $.grep(Library.searchItems, function (i) {
-            return i.text.toLowerCase().indexOf(searchText) != -1;
-        });
-    $('#search-results').html('');
-    var resultsLength = searchResults.length;
-    if (searchText.trim().length <= 0)
-        resultsLength = 0;
-
-    if ($('#search').val().length <= 0)
-        SearchResults.hide();
-    else
-        SearchResults.show();
-
-    if (resultsLength > 0) {
-        SearchResults.show();
-        if (resultsLength > 5)
-            resultsLength = 5;
-    }
-    else
-        SearchResults.hide(true);
-
-    
-
-    for (l = 0; l < resultsLength; l++) {
-        var icon = 'book';
-        if (searchResults[l].object.verses) // If the object is a song
-            icon = 'music_note';
-        $('#search-results').append($('<a href="#!" id="search-result-' + l + '" class="collection-item"><i class="small material-icons left">' + icon + '</i><span class="truncate">' + searchResults[l].text.replace(regEx, '<b>' + $('#search').val() + '</b>') + '</span></a>'));
-    }
-    // Add click event for search item
-    $('#search-results .collection-item').click(function () {
-        var clickedObject = searchResults[$(this).attr('id').replace('search-result-', '')].object;
-
-        if (clickedObject.verses) // If the object is a song
-            GoToVerseEditScreen(clickedObject);
-        else {
-            ResetMainArea();
-            songScreenInit(GoToVerseEditScreen, clickedObject);
+function RunSearch(e) {
+    var keypressed = String.fromCharCode(e.keyCode); // Set value of pressed key.
+    if (!e.shiftKey)
+        keypressed = keypressed.toLowerCase();
+    $('#search').focus(); // select search element
+    if (e.keyCode != 38 && e.keyCode != 40) {
+        if (e.keyCode == 8) // Backspace was pressed
+        {
+            $('#search').val($('#search').val().slice(0, -1));
+            e.preventDefault();
         }
+        else
+            $('#search').val($('#search').val() + keypressed);
 
-        $('#search').val(''); // Clear Search bar.
-        SearchResults.hide();
-    });
 
-    var $collection = $('#search-results .collection-item');
-    $($collection[0]).addClass('active');
+        var searchText = $('#search').val().toLowerCase(),
+            regEx = new RegExp(searchText, "ig"),
+            searchItems = Library.searchItems,
+            l,
+            searchResults = $.grep(Library.searchItems, function (i) {
+                return i.text.toLowerCase().indexOf(searchText) != -1;
+            });
+        $('#search-results').html('');
+        var resultsLength = searchResults.length;
+        if (searchText.trim().length <= 0)
+            resultsLength = 0;
+
+        if ($('#search').val().length <= 0)
+            SearchResults.hide();
+        else
+            SearchResults.show();
+
+        if (resultsLength > 0) {
+            SearchResults.show();
+            if (resultsLength > 5)
+                resultsLength = 5;
+        }
+        else
+            SearchResults.hide(true);
+
+        for (l = 0; l < resultsLength; l++) {
+            var icon = 'book';
+            if (searchResults[l].object.verses) // If the object is a song
+                icon = 'music_note';
+            $('#search-results').append($('<a href="#!" id="search-result-' + l + '" class="collection-item"><i class="small material-icons left">' + icon + '</i><span class="truncate">' + searchResults[l].text.replace(regEx, '<b>' + $('#search').val() + '</b>') + '</span></a>'));
+        }
+        // Add click event for search item
+        $('#search-results .collection-item').click(function () {
+            var clickedObject = searchResults[$(this).attr('id').replace('search-result-', '')].object;
+
+            if (clickedObject.verses) // If the object is a song
+                GoToVerseEditScreen(clickedObject);
+            else {
+                ResetMainArea();
+                songScreenInit(GoToVerseEditScreen, clickedObject);
+            }
+
+            $('#search').val(''); // Clear Search bar.
+            SearchResults.hide();
+        });
+
+        var $collection = $('#search-results .collection-item');
+        $($collection[0]).addClass('active');
+    }
 }
 
 var SearchResults = {
